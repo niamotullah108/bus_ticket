@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 // #include <windows.h>
 
 #define TOTAL_SEATS 20
+#define TOTAL_ROUTES 3
 
-void welcome_msg(); // welcome message
-void chose_route(); // chose route
-int get_n_seat();	// get number of seats
-void book_seat();	// book seats
+void welcome_msg();		 // welcome message
+void chose_route();		 // chose route
+int get_n_seat();		 // get number of seats
+void book_seat();		 // book seats
+void available_routes(); // available routes
+void clr();				 // clear screen
 
-char routes[2][100] = {"Chashara to Signboard", "Chashara to Gulisthan"};
+char name[50];
+char routes[TOTAL_ROUTES][100] = {"Chashara to Signboard", "Chashara to Gulisthan", "Earth to Mars        "};
+int cost[TOTAL_ROUTES] = {40, 60, 11};
 char destination[50];
 int check_seat[TOTAL_SEATS];
 int available_seats = 20;
@@ -25,14 +31,16 @@ int main()
 	}
 
 	welcome_msg();
+
 	// ask name
-	char name[50];
-	printf("Enter your name: ");
+	printf("\tEnter your name: \n");
+	printf("\t>> ");
 	fgets(name, sizeof(name), stdin);
-	// get route
-	chose_route();
-	get_n_seat();
-	book_seat();
+	clr();
+	available_routes(); // show available routes
+	chose_route();		// get destination
+	get_n_seat();		// get number of seats
+	book_seat();		// book seats
 
 	// print booked seats
 	printf("Booked seats:\n");
@@ -47,32 +55,65 @@ int main()
 
 	return 0;
 }
+void clr()
+{
+	system("clear");
+}
 
 void book_seat()
 {
-
-	// book seats
-
 	int seat_no;
 	while (n_seat > 0)
 	{
+
 		// visualize seats
-		printf("Available seats:\n");
-		printf("...............\n");
-		for (int j = 0; j < TOTAL_SEATS; j++)
+		printf("\n\tAvailable seats:\t\n\n");
+		printf("\t\t============================\n");
+		for (int i = 0; i < TOTAL_SEATS; i += 4)
 		{
-			if (check_seat[j] == 1)
+			printf("\t\t------------\t------------\n");
+			if (check_seat[i] == 1)
 			{
-				printf("%d ", j + 1);
+				printf("\t\t (%d)  ", i + 1);
 			}
 			else
 			{
-				printf("X ");
+				printf("\t\t (X)  ", i + 1);
 			}
-		}
-		printf("\n...............\n\n");
 
-		printf("Enter a seat number to book: ");
+			if (check_seat[i + 1] == 1)
+			{
+				printf("(%d) \t ", i + 2);
+			}
+			else
+			{
+				printf("(X) \t ", i + 2);
+			}
+
+			if (check_seat[i + 2] == 1)
+			{
+				printf("(%d)  ", i + 3);
+			}
+			else
+			{
+				printf("(X)  ", i + 3);
+			}
+			if (check_seat[i + 3] == 1)
+			{
+				printf("(%d) \n", i + 4);
+			}
+			else
+			{
+				printf("(X) \n", i + 4);
+			}
+
+			printf("\t\t------------\t------------\n");
+		}
+		printf("\t\t============================\n\n");
+
+		printf("\tEnter a seat number to book:\n");
+		printf("\t>> ");
+
 		scanf("%d", &seat_no);
 		if (seat_no > TOTAL_SEATS || seat_no < 0)
 		{
@@ -100,7 +141,9 @@ int get_n_seat()
 {
 	while (1)
 	{
-		printf("How many seats you want to book: ");
+		clr();
+		printf("\tHow many seat you want to book:\n");
+		printf("\t>> ");
 		scanf("%d", &n_seat);
 		if (n_seat > available_seats)
 		{
@@ -114,33 +157,42 @@ int get_n_seat()
 	}
 }
 
-void chose_route()
+void available_routes()
 {
-	printf("Available Routes:\n");
-	for (int i = 0; i < 2; i++)
+	printf("\tAvailable Routes: \n");
+	printf("\t---------------------------------------\n");
+	printf("\t| SN |        Destinations     | Cost |\n");
+	printf("\t---------------------------------------\n");
+
+	for (int i = 0; i < TOTAL_ROUTES; i++)
 	{
 
-		printf("%d) %s\n", i + 1, routes[i]);
+		printf("\t| %d | %s    | %dtk |\n", i + 1, routes[i], cost[i]);
+		printf("\t---------------------------------------\n");
 	}
+}
+
+void chose_route()
+{
 
 	int i;
 	while (1)
 	{
-		printf("Chose your destination:\n");
+
+		printf("\n\tChose your destination: \n");
+		printf("\t>> ");
 		scanf("%d", &i);
-		if (i == 1)
-		{
-			strcpy(destination, routes[i - 1]);
-			break;
-		}
-		else if (i == 2)
+		if (i > 0 && i <= TOTAL_ROUTES)
 		{
 			strcpy(destination, routes[i - 1]);
 			break;
 		}
 		else
 		{
-			printf("Please enter valid choice!\n");
+
+			printf("\n\tInvalid choice!\n");
+			printf("\tPlease chose from the table avobe.\n");
+			// available_routes();
 			continue;
 		}
 	}
@@ -148,5 +200,15 @@ void chose_route()
 
 void welcome_msg()
 {
-	printf("Welcome to the ticket booking system\n");
+	clr();
+	printf("\t==========================================\n");
+	printf("\t=====~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=====\n");
+	printf("\t|    Welcome to Chashara Bus Terminal    |\n");
+	printf("\t=====~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=====\n");
+	printf("\t==========================================\n\n");
+
+	printf("\tPress 'Enter' to continue...\n");
+	getchar();
+	fflush(stdin);
+	clr();
 }
