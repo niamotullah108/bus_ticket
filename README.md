@@ -3,5 +3,5 @@ This is a simple bus ticket management system. It is a console application. It i
 
 **To-do:**
 - add AC bus
-- add cancel ticket function via token number
+- add confirmation before deleting
 - port to windows
