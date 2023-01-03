@@ -16,6 +16,7 @@ int init();				 // necessary initializations
 void admin_panel();		 // admin panel
 char *gen_token(char name[50], char destination[100], int n_seats);
 void view_booked_seats(int c_count); // view booked seats
+void delete_by_token(char token[7]); // delete booked seat
 
 struct data
 {
@@ -26,18 +27,16 @@ struct data
 	int booked_seats[TOTAL_SEATS];
 	char token[7];
 };
-
 struct data c_data[TOTAL_SEATS]; // to store customer data
-// char token[7];
-// char name[50];
+
 char routes[TOTAL_ROUTES][100] = {"Chashara to Signboard", "Chashara to Gulisthan", "Earth to Mars        "};
 int cost[TOTAL_ROUTES] = {40, 60, 11};
-// char destination[50];
 int check_seat[TOTAL_SEATS];
-int available_seats = 20;
+int available_seats = TOTAL_SEATS;
 int booked_seats = 0;
 int n_seat;
 int c_count = 0;
+int c_existence[TOTAL_SEATS];
 
 int main()
 {
@@ -89,6 +88,45 @@ int main()
 	return 0;
 }
 
+void delete_by_token(char token[7])
+{
+	int digit;
+	digit = ((token[0] - 48) * 10) + (token[1] - 48);
+	if (c_existence[digit - 1] == 0)
+	{
+		printf("\tInvalid token!\n");
+		printf("\t(error code: 110000\n\n");
+		printf("\tPress 'enter' to continue!\n");
+		printf("\t");
+		getchar();
+		fflush(stdin);
+		clr();
+	}
+	else if (strcmp(token, c_data[digit - 1].token) == 0)
+	{
+		c_existence[digit - 1] = 0; // set existence to 0/flase
+		// delete booked seats
+		for (int i = 0; i < c_data[digit - 1].n_seats; i++)
+		{
+			check_seat[c_data[digit - 1].booked_seats[i] - 1] = 1; // set seat to available
+		}
+		available_seats += c_data[digit - 1].n_seats; // add available seats
+		booked_seats -= c_data[digit - 1].n_seats;	  // remove booked seats
+
+		printf("\tDeleted successfully!\n\n");
+	}
+	else
+	{
+		printf("\tNo such token exists!\n");
+		printf("\t(error code: 000011)\n\n");
+		printf("\tPress 'enter' to continue!\n");
+		printf("\t");
+		getchar();
+		fflush(stdin);
+		clr();
+	}
+}
+
 char *gen_token(char name[50], char destination[100], int n_seats)
 {
 	char token[7] = "";
@@ -104,10 +142,17 @@ char *gen_token(char name[50], char destination[100], int n_seats)
 }
 int init()
 {
-	{
+	{ // to check bus seats availability
 		for (int i = 0; i < TOTAL_SEATS; i++)
 		{
 			check_seat[i] = 1; // 1 means available
+		}
+	}
+
+	{ // to do list booked customers
+		for (int i = 0; i < TOTAL_SEATS; i++)
+		{
+			c_existence[i] = 0; // 0 means doesn't exists
 		}
 	}
 }
@@ -115,29 +160,36 @@ int init()
 void admin_panel()
 {
 	int choice;
+	char token[7];
 	while (1)
 	{
 		printf("\t1. View all booked seats\n");
-		// printf("\t2. Delete a booked seat\n");
+		printf("\t2. Cancel Ticket (Using Token)\n");
 		printf("\t3. Back\n");
 		printf("\n\t>> ");
 		scanf("%d", &choice);
 		getchar();
 		fflush(stdin);
-
 		if (choice == 1)
 		{
 			clr();
 			view_booked_seats(c_count);
-			// printf("\n\tPress 'enter' to continue!\n");
-			// printf("\t>> ");
-			// getchar();
-			// fflush(stdin);
-			// clr();
 		}
 		else if (choice == 2)
 		{
+			// get token input
+			printf("\tEnter token No.: ");
+			fgets(token, sizeof(token), stdin);
+			fflush(stdin);
+			getchar();
+			clr();
+			delete_by_token(token); // pass the token to this function
+			printf("\tPress 'enter' to continue...\n");
+			printf("\t");
+			getchar();
+			clr();
 		}
+
 		else if (choice == 3)
 		{
 			clr();
@@ -170,9 +222,15 @@ void view_booked_seats(int c_count)
 	{
 		printf("\n\t(Serial No. > Token No. > Booked by > Destination > No. of booked seats)\n\n");
 		printf("\t------------------------------------------------------------------------\n\n");
-		for (int i = 0; i < c_count; i++)
+		// show all booked seats
+		for (int i = 0, j = 0; i < TOTAL_SEATS && j < c_count; i++)
 		{
-			printf("\t\t%d. > %s > %s > %s > %d\n\n", (i+1), c_data[i].token, c_data[i].name, c_data[i].destination, c_data[i].n_seats);
+			if (c_existence[i] == 1)
+			{
+				// show only if customer exists
+				printf("\t\t%d. > %s > %s > %s > %d\n\n", (j + 1), c_data[i].token, c_data[i].name, c_data[i].destination, c_data[i].n_seats);
+				j++; // only increment if customer exists
+			}
 		}
 		printf("\t------------------------------------------------------------------------\n\n");
 		printf("\n");
@@ -207,32 +265,32 @@ void book_seat()
 		scanf("%d", &n_seat);
 		if (n_seat > available_seats)
 		{
-			printf("Sorry! Only %d seats are available!\n", available_seats);
+			printf("\tSorry! Only %d seats are available!\n\n", available_seats);
 			continue;
 		}
 		else
 		{
 			c_data[c_count].n_seats = n_seat;
+			clr();
 			break;
 		}
 	}
 
 	while (n_seat > 0)
 	{
-		clr();
 		// visualize seats
 		printf("\n\tAvailable seats:\t\n\n");
-		printf("\t\t============================\n");
+		printf("\t============================\n");
 		for (int i = 0; i < TOTAL_SEATS; i += 4)
 		{
-			printf("\t\t------------\t------------\n");
+			printf("\t------------\t------------\n");
 			if (check_seat[i] == 1)
 			{
-				printf("\t\t (%d)  ", i + 1);
+				printf("\t (%d)  ", i + 1);
 			}
 			else
 			{
-				printf("\t\t (X)  ");
+				printf("\t (X)  ");
 			}
 
 			if (check_seat[i + 1] == 1)
@@ -261,29 +319,31 @@ void book_seat()
 				printf("(X) \n");
 			}
 
-			printf("\t\t------------\t------------\n");
+			printf("\t------------\t------------\n");
 		}
-		printf("\t\t============================\n\n");
+		printf("\t============================\n\n");
 
 		printf("\tEnter a seat number to book:\n");
 		printf("\t>> ");
 		scanf("%d", &seat_no);
 		getchar();
 		fflush(stdin);
+
 		if (seat_no > TOTAL_SEATS || seat_no < 0)
 		{
 			printf("\tInvalid seat number!\n\n");
-			printf("\tPress 'enter' to continue!\n");
+			printf("\tPress 'enter' to show available seats...\n");
 			printf("\t");
 			getchar();
 			fflush(stdin);
+			clr();
 			continue;
 		}
-
 		// check if seat is booked or not
-		if (check_seat[seat_no - 1] == 0)
+		else if (check_seat[seat_no - 1] == 0)
 		{
-			printf("This seat is already booked,\nPlease choose another seat!\n");
+			clr();
+			printf("\tThis seat is already booked,\n\tPlease choose another seat!\n");
 			continue;
 		}
 		else
@@ -293,6 +353,7 @@ void book_seat()
 			booked_seats++;
 			available_seats--;
 			n_seat--;
+			clr();
 		}
 	}
 	clr();
@@ -323,12 +384,14 @@ void book_seat()
 		{
 			// generate token number
 			*gen_token(c_data[c_count].name, c_data[c_count].destination, c_data[c_count].n_seats);
-			// clr();
+			// make customer existence 1/true
+			c_existence[c_count] = 1;
+			// increase customer count
 			c_count++;
+			// print confirmation message
 			printf("\n\tBooking confirmed!\n\n");
 			printf("\tYour token number is: %s", c_data[c_count - 1].token);
 			printf("\n\t(Please keep this token number safe!)\n\n");
-
 			printf("\tPress 'Enter' to continue...\n");
 			printf("\t");
 			getchar();
@@ -336,13 +399,17 @@ void book_seat()
 			fflush(stdin);
 			break;
 		}
-		else if (ch == 'n' || ch == 'N')
+		else if (ch == 'n' || ch == 'N') // cancel booking
 		{
-			// cancel booking
+
+			// reset check_seat array
 			for (int i = 0; i < c_data[c_count].n_seats; i++)
 			{
 				check_seat[c_data[c_count].booked_seats[i] - 1] = 1;
 			}
+			// reset variables
+			booked_seats -= c_data[c_count].n_seats;
+			available_seats += c_data[c_count].n_seats;
 			clr();
 			printf("\tBooking canceled!\n\n");
 			printf("\tPress 'Enter' to continue...\n");
