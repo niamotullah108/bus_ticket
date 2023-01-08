@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 // check OS for platform specific things
-#if defined(__windows__)
+#if defined(_WIN32)
 #include <windows.h>		// necessary header for windows
 #define clr() system("cls") // clear terminal for windows
 #else
@@ -27,7 +27,7 @@ void delete_by_token(char *token);							// delete booked seat
 int check_admin_pass();										// check admin password
 void change_admin_pass();									// change password
 
-struct data
+struct data // to store customer data
 {
 	char name[50];
 	char destination[100];
@@ -36,7 +36,7 @@ struct data
 	int booked_seats[TOTAL_SEATS];
 	char token[7];
 };
-struct data c_data[TOTAL_SEATS]; // to store customer data
+struct data c_data[TOTAL_SEATS]; // create a array of struct data
 
 char routes[TOTAL_ROUTES][100] = {"Chashara to Signboard", "Chashara to Gulisthan", "Earth to Mars        "};
 int cost[TOTAL_ROUTES] = {40, 60, 11};
@@ -123,7 +123,7 @@ void change_admin_pass()
 			pass[strlen(pass) - 1] = '\0'; // remove newline character
 			fflush(stdin);
 			clr();
-			if (strlen(pass) < 4 || strlen(pass) > PASS_LEN-1)
+			if (strlen(pass) < 4 || strlen(pass) > PASS_LEN - 1)
 			{
 				printf("\tPassword must have to be between 4 and 12 characters long!\n\n");
 				printf("\tPress 'enter' to continue!\n");
@@ -132,7 +132,6 @@ void change_admin_pass()
 				fflush(stdin);
 				clr();
 				continue;
-
 			}
 			else
 			{
