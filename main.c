@@ -14,18 +14,17 @@
 #define TOTAL_ROUTES 3
 #define PASS_LEN 13
 
+int init();													// necessary initializations
 void welcome_msg();											// welcome message
 void chose_route();											// chose route
-int get_n_seat();											// get number of seats
 void book_seat();											// book seats
-void available_routes();									// available routes
-int init();													// necessary initializations
 void admin_panel();											// admin panel
 char gen_token(char *name, char *destination, int n_seats); // generate token
 void view_booked_seats(int c_count);						// view booked seats
 void delete_by_token(char *token);							// delete booked seat
 int check_admin_pass();										// check admin password
 void change_admin_pass();									// change password
+int search_by_token(char *token);							// search/view booking using token
 
 struct data // to store customer data
 {
@@ -100,6 +99,28 @@ int main()
 		}
 	}
 
+	return 0;
+}
+int search_by_token(char *token)
+{
+	for (int i = 0; i < TOTAL_SEATS; i++) // loop through all struct array
+	{
+		if (strcmp(token, c_data[i].token) == 0) // check if match with any booked customer
+		{
+			printf("\tToken No.: %s\n", c_data[i].token);
+			printf("\tName: \t%s\n", c_data[i].name);
+			printf("\tDestination: %s\n", c_data[i].destination);
+			printf("\tNumber of seats: %d\n", c_data[i].n_seats);
+			printf("\tBooked seats No.: ");
+			for (int i = 0; i < c_data[i].n_seats; i++)
+			{
+				printf("%d, ", c_data[i].booked_seats[i]);
+			}
+			printf("\n");
+			printf("\tTotal cost: %dtk\n", c_data[i].n_seats * c_data[i].cost_per_seat);
+			return 1;
+		}
+	}
 	return 0;
 }
 void change_admin_pass()
@@ -203,6 +224,7 @@ void delete_by_token(char *token)
 		available_seats += c_data[digit - 1].n_seats; // add available seats
 		booked_seats -= c_data[digit - 1].n_seats;	  // remove booked seats
 		c_count--;									  // decrease customer count
+		c_data[digit - 1].token[0] = '\0';			  // clear token
 		clr();
 		printf("\tDeleted successfully!\n\n");
 	}
@@ -247,9 +269,10 @@ void admin_panel()
 	while (1)
 	{
 		printf("\t1. View all booked seats\n");
-		printf("\t2. Cancel Ticket (Using Token)\n");
-		printf("\t3. Change password\n");
-		printf("\t4. Back\n");
+		printf("\t2. Search/View Ticket (Using Token)\n");
+		printf("\t3. Cancel Ticket (Using Token)\n");
+		printf("\t4. Change password\n");
+		printf("\t5. Back\n");
 		printf("\n\t>> ");
 		scanf("%d", &choice);
 		getchar();
@@ -260,6 +283,46 @@ void admin_panel()
 			view_booked_seats(c_count);
 		}
 		else if (choice == 2)
+		{
+			clr();
+			if (c_count > 0)
+			{
+				char token[7];
+				printf("\tEnter token No.:\n");
+				printf("\t>> ");
+				fgets(token, sizeof(token), stdin);
+				getchar();
+				fflush(stdin);
+				clr();
+
+				if (search_by_token(token))
+				{
+					printf("\tPress 'enter' to continue...\n");
+					printf("\t");
+					getchar();
+					fflush(stdin);
+				}
+				else
+				{
+					printf("\tNo such token exists!\n\n");
+					printf("\tPress 'enter' to continue!\n");
+					printf("\t");
+					getchar();
+					fflush(stdin);
+				}
+				clr();
+			}
+			else
+			{
+				printf("\tNo seats booked yet!\n\n");
+				printf("\tPress 'enter' to continue!\n");
+				printf("\t");
+				getchar();
+				fflush(stdin);
+				clr();
+			}
+		}
+		else if (choice == 3)
 		{
 			// get token input
 			clr();
@@ -276,10 +339,12 @@ void admin_panel()
 				printf("\tPress 'enter' to continue...\n");
 				printf("\t");
 				getchar();
+				fflush(stdin);
 				clr();
 			}
 			else
 			{
+				clr();
 				printf("\tNo seats booked yet!\n\n");
 				printf("\tPress 'enter' to continue!\n");
 				printf("\t");
@@ -288,13 +353,13 @@ void admin_panel()
 				clr();
 			}
 		}
-		else if (choice == 3)
+		else if (choice == 4)
 		{
 			clr();
 			change_admin_pass();
 			break;
 		}
-		else if (choice == 4)
+		else if (choice == 5)
 		{
 			clr();
 			break;
@@ -587,7 +652,6 @@ void welcome_msg()
 	printf("\t|    Welcome to Chashara Bus Terminal    |\n");
 	printf("\t=====~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=====\n");
 	printf("\t==========================================\n\n");
-
 	printf("\tPress 'Enter' to continue...\n");
 	printf("\t");
 	getchar();
