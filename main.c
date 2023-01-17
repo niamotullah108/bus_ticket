@@ -105,16 +105,16 @@ int search_by_token(char *token)
 {
 	for (int i = 0; i < TOTAL_SEATS; i++) // loop through all struct array
 	{
-		if (strcmp(token, c_data[i].token) == 0) // check if match with any booked customer
+		if (strcmp(token, c_data[i].token) == 0 && c_existence[i] == 1) // check if match with any booked customer
 		{
 			printf("\tToken No.: %s\n", c_data[i].token);
 			printf("\tName: \t%s\n", c_data[i].name);
 			printf("\tDestination: %s\n", c_data[i].destination);
 			printf("\tNumber of seats: %d\n", c_data[i].n_seats);
 			printf("\tBooked seats No.: ");
-			for (int i = 0; i < c_data[i].n_seats; i++)
+			for (int j = 0; j < c_data[i].n_seats; j++)
 			{
-				printf("%d, ", c_data[i].booked_seats[i]);
+				printf("%d, ", c_data[i].booked_seats[j]);
 			}
 			printf("\n");
 			printf("\tTotal cost: %dtk\n", c_data[i].n_seats * c_data[i].cost_per_seat);
@@ -592,6 +592,7 @@ void book_seat()
 		else
 		{
 			printf("\n\tInvalid input!\n\n");
+			fflush(stdin);
 			printf("\t(if it is Yes enter 'y' or 'Y' and if it is No enter 'n' or 'N')\n\n");
 			printf("\tDo you want to confirm booking? (y/n)\n");
 			printf("\t>> ");
