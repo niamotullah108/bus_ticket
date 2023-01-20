@@ -14,17 +14,18 @@
 #define TOTAL_ROUTES 3
 #define PASS_LEN 13
 
-void init();         // necessary initializations
+void init();        // necessary initializations
 void welcome_msg(); // welcome message
 void chose_route(); // chose route
 void book_seat();   // book seats
 void admin_panel(); // admin panel
-char gen_token(char *name, char *destination, int n_seats); // generate token
-void view_booked_seats(int c_count);                        // view booked seats
-void delete_by_token(char *token); // delete booked seat
-int check_admin_pass();            // check admin password
-void change_admin_pass();          // change password
-int search_by_token(char *token);  // search/view booking using token
+char *gen_token(char *name, char *destination, int n_seats, char *token,
+                int c_count);        // generate token
+void view_booked_seats(int c_count); // view booked seats
+void delete_by_token(char *token);   // delete booked seat
+int check_admin_pass();              // check admin password
+void change_admin_pass();            // change password
+int search_by_token(char *token);    // search/view booking using token
 
 struct data // to store customer data
 {
@@ -211,15 +212,17 @@ void delete_by_token(char *token) {
   }
 }
 
-char gen_token(char *name, char *destination, int n_seats) {
-  char c_count_str[3];
-  sprintf(c_count_str, "%02d", c_count + 1);
-  strcat(c_data[c_count].token, c_count_str);
-  strncat(c_data[c_count].token, name, 1);
-  strncat(c_data[c_count].token, destination, 1);
-  char n_seats_str[3];
-  sprintf(n_seats_str, "%02d", n_seats);
-  strcat(c_data[c_count].token, n_seats_str);
+char *gen_token(char *name, char *destination, int n_seats, char *token,
+                int c_count) {
+  char first_two_str[3];                   // to store 2 byte of str
+  sprintf(first_two_str, "%02d", c_count); // str = 12
+  strcat(token, first_two_str);            // token = 12xxxx
+  strncat(token, name, 1);                 // token = 123xxx
+  strncat(token, destination, 1);          // token = 1234xx
+  char last_two_str[3];
+  sprintf(last_two_str, "%02d", n_seats); // str = 56
+  strcat(token, last_two_str);            // token = 123456
+  return token;
 }
 void init() {
   { // to check bus seats availability
@@ -474,13 +477,13 @@ void book_seat() {
 
     if (ch == 'y' || ch == 'Y') {
       clr();
+      c_count++;                // increase customer count
+      c_existence[c_count] = 1; // make customer existence 1/true
       // generate token number
-      gen_token(c_data[c_count].name, c_data[c_count].destination,
-                c_data[c_count].n_seats);
-      // make customer existence 1/true
-      c_existence[c_count] = 1;
-      // increase customer count
-      c_count++;
+      gen_token(c_data[c_count - 1].name, c_data[c_count - 1].destination,
+                c_data[c_count - 1].n_seats, c_data[c_count - 1].token,
+                c_count);
+
       // print confirmation message
       printf("\n\tBooking confirmed!\n\n");
       printf("\tYour token number is: %s", c_data[c_count - 1].token);
@@ -494,7 +497,6 @@ void book_seat() {
     } else if (ch == 'n' || ch == 'N') // cancel booking
     {
       clr();
-
       // reset check_seat array
       for (int i = 0; i < c_data[c_count].n_seats; i++) {
         check_seat[c_data[c_count].booked_seats[i] - 1] = 1;
